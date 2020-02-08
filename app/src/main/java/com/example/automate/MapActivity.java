@@ -124,26 +124,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 sourceText.setText(AppUtils.source);
                 sourceText.setTextColor(Color.parseColor("#000000"));
             }
-
-            /*if(type!=null && type.equals("destination")) {
-                AppUtils.destination = location;
-                destinationText.setText(location);
-                destinationText.setTextColor(Color.parseColor("#000000"));
-            }
-            else if(type!=null) {
-                sourceText.setText(location);
-                sourceText.setTextColor(Color.parseColor("#000000"));
-            }*/
         }
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-      /*  if(sourceLat==-36 && sourceLng==81f) {
-            destinationText.setText("Destination");
-            sourceText.setText("Source");
-            sourceText.setTextColor(Color.parseColor("#808080"));
-            destinationText.setTextColor(Color.parseColor("#808080"));
-        }*/
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapView = mapFrag.getView();
@@ -176,10 +159,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
         Polyline polyline1 = mGoogleMap.addPolyline(new PolylineOptions()
                 .clickable(true)
-/*                .add(new LatLng(10.7618779,78.8174691))
-                .add(new LatLng(10.7618433,78.8174696))
-                .add(new LatLng(10.7618433,78.8174696))
-                .add(new LatLng(10.761855,78.8184781)));*/
                 .addAll(latLngs));
     }
 
