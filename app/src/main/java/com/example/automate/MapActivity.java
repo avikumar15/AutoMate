@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -203,11 +204,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 //move map camera
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
-                if(!(sourceLat ==-36&& sourceLng ==81f)) {
+                Log.e("SL","#"+AppUtils.sourceLat+"$"+AppUtils.sourceLong+"#\n%"+AppUtils.destinationLat+"$"+AppUtils.destinationLong);
+                if(!(AppUtils.sourceLat ==-36&& AppUtils.sourceLong ==81f)&&!(AppUtils.destinationLat ==-36&& AppUtils.destinationLong ==81f)) {
                     LatLng midPoint = new LatLng((AppUtils.destinationLat +AppUtils.sourceLat)/2f, (AppUtils.sourceLong +AppUtils.destinationLong)/2f);
                     mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
-                }else{
+                }
+                if(!(AppUtils.sourceLat ==-36&& AppUtils.sourceLong ==81f)||!(AppUtils.destinationLat ==-36&& AppUtils.destinationLong ==81f)) {
+                    LatLng midPoint = new LatLng((AppUtils.destinationLat +AppUtils.sourceLat)/2f, (AppUtils.sourceLong +AppUtils.destinationLong)/2f);
+                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+                } else{
                     mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                 }
             }
