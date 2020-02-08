@@ -9,6 +9,6 @@ import retrofit2.http.Query;
 public interface RouteInterface {
 
     @GET("json")
-    Call<DirectionModel> getDirectionDetails(@Query("origin") String origin, @Query("destination") String destination, @Query("key") String key);
+    Call<DirectionModel> getDirectionDetails(@Query("origin") String origin, @Query("destination") String destination, @Query("waypoints") String waypoints, @Query("key") String key);
 
 }
