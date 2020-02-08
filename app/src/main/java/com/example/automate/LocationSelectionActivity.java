@@ -1,5 +1,6 @@
 package com.example.automate;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,11 +17,16 @@ public class LocationSelectionActivity extends AppCompatActivity {
     List<String> location = new Vector<String>();
     List<Float> latitude = new Vector<Float>();
     List<Float> longitude = new Vector<Float>();
+    String type;
     RecyclerView loclist;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        type = intent.getStringExtra("type");
+
         setContentView(R.layout.activity_location_search);
         loclist = findViewById(R.id.location_list);
         loclist.setHasFixedSize(true);
@@ -40,7 +46,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
                 78.817475f, 78.817672f, 78.813085f, 78.817133f, 78.818521f, 78.819815f,
                 78.818068f, 78.816590f, 78.813336f, 78.818472f, 78.815113f,
                 78.813110f, 78.815354f, 78.816446f));
-        locationAdapter = new LocationAdapter(this, location, latitude, longitude);
+        locationAdapter = new LocationAdapter(this, location, latitude, longitude, type);
         loclist.setAdapter(locationAdapter);
     }
 }

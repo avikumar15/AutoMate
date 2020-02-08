@@ -28,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -42,39 +43,86 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     Location mLastLocation;
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
-    Float lat = -36f, lng = 81f;
+    Float sourceLat = -36f, sourceLng = 81f;
+    Float destLat = -36f, destLng = 81f;
     String location;
     Intent intent;
-    TextView locationText;
+    TextView destinationText;
+    TextView sourceText;
+    String type = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        locationText = findViewById(R.id.et_location);
-        locationText.setOnClickListener(new View.OnClickListener() {
+        destinationText = findViewById(R.id.et_destination);
+        sourceText = findViewById(R.id.et_source);
+
+        destinationText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MapActivity.this,LocationSelectionActivity.class);
+                intent.putExtra("type","Destination");
+                startActivity(intent);
+            }
+        });
+        sourceText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MapActivity.this,LocationSelectionActivity.class);
+                intent.putExtra("type","Source");
                 startActivity(intent);
             }
         });
 
         if(getIntent()!=null) {
             intent = getIntent();
-            lat = intent.getFloatExtra("lat", -36);
-            lng = intent.getFloatExtra("lng", 81);
+            float lat, lng;
+            lat = intent.getFloatExtra("sourceLat", -36f);
+            lng = intent.getFloatExtra("sourceLng", 81f);
+            type = intent.getStringExtra("type");
             location = intent.getStringExtra("loc");
 
-            locationText.setText(location);
-            locationText.setTextColor(Color.parseColor("#000000"));
+            System.out.println(type+"is the type");
+
+            if(getIntent()!=null&&type!=null) {
+                if(type.equals("Destination")) {
+                    AppUtils.destination = location;
+                    AppUtils.destinationLat = lat;
+                    AppUtils.destinationLong = lng;
+                }
+                else {
+                    AppUtils.sourceLat = lat;
+                    AppUtils.sourceLong = lng;
+                    AppUtils.source = location;
+                }
+
+                destinationText.setText(AppUtils.destination);
+                destinationText.setTextColor(Color.parseColor("#000000"));
+                sourceText.setText(AppUtils.source);
+                sourceText.setTextColor(Color.parseColor("#000000"));
+            }
+
+            /*if(type!=null && type.equals("destination")) {
+                AppUtils.destination = location;
+                destinationText.setText(location);
+                destinationText.setTextColor(Color.parseColor("#000000"));
+            }
+            else if(type!=null) {
+                sourceText.setText(location);
+                sourceText.setTextColor(Color.parseColor("#000000"));
+            }*/
         }
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        if(lat==-36 && lng==81)
-        locationText.setText("Location");
+      /*  if(sourceLat==-36 && sourceLng==81f) {
+            destinationText.setText("Destination");
+            sourceText.setText("Source");
+            sourceText.setTextColor(Color.parseColor("#808080"));
+            destinationText.setTextColor(Color.parseColor("#808080"));
+        }*/
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
@@ -131,18 +179,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 }
 
                 //Place current location marker
-                LatLng latLng = new LatLng(lat, lng);
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title("Current Position");
-                if(!(lat==-36&&lng==81))
-                mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
+                LatLng sourceLatLng = new LatLng(AppUtils.sourceLat, AppUtils.sourceLong);
+                MarkerOptions sourceMarker = new MarkerOptions();
+                sourceMarker.position(sourceLatLng);
+                sourceMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.blue_pin));
+                sourceMarker.title("Source Position");
+
+                System.out.println("location is "+AppUtils.sourceLat+" "+ AppUtils.sourceLong);
+
+                LatLng destLatLng = new LatLng(AppUtils.destinationLat, AppUtils.destinationLong);
+                MarkerOptions destinationMarker = new MarkerOptions();
+                destinationMarker.position(destLatLng);
+                destinationMarker.title("Destination Position");
+
+                System.out.println("location is "+AppUtils.destinationLat+" "+ AppUtils.destinationLong);
+
+                if(!(AppUtils.sourceLat ==-36f && AppUtils.sourceLong ==81f))
+                mCurrLocationMarker = mGoogleMap.addMarker(sourceMarker);
+
+                if(!(AppUtils.destinationLat ==-36f && AppUtils.destinationLong ==81f))
+                    mCurrLocationMarker = mGoogleMap.addMarker(destinationMarker);
 
                 //move map camera
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-                if(!(lat==-36&&lng==81)) {
-                    LatLng midPoint = new LatLng((lat+location.getLatitude())/2, (lng+location.getLongitude())/2);
+                if(!(sourceLat ==-36&& sourceLng ==81f)) {
+                    LatLng midPoint = new LatLng((AppUtils.destinationLat +AppUtils.sourceLat)/2f, (AppUtils.sourceLong +AppUtils.destinationLong)/2f);
                     mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
                 }else{
                     mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
