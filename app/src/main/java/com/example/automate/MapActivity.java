@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +69,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     String type = "";
     DirectionModel model;
     List<LatLng> latLngs;
+    View mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +146,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }*/
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapView = mapFrag.getView();
         mapFrag.getMapAsync(this);
     }
 
@@ -157,11 +160,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
     void showRoute(DirectionModel model) {
-        try {
-            for (int i = 0; i < model.getRoutes().get(0).getLegs().get(0).getSteps().size(); i++) {
-                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getStartLocation().getLat(), model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getStartLocation().getLng()));
-                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getEndLocation().getLat(), model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getEndLocation().getLng()));
+        try {for (int j = 0; j < model.getRoutes().get(0).getLegs().size(); j++){
+            for (int i = 0; i < model.getRoutes().get(0).getLegs().get(j).getSteps().size(); i++) {
+                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLat(), model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLng()));
+                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLat(), model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLng()));
+                LatLng sourceLatLng = new LatLng(10,78);
+                MarkerOptions sourceMarker = new MarkerOptions();
+                sourceMarker.position(sourceLatLng);
+                sourceMarker.icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
             }
+        }
         }catch (NullPointerException e) {
             e.printStackTrace();
         }
@@ -177,6 +186,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
+
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(120000); // two minute interval
@@ -198,7 +208,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             mGoogleMap.setMyLocationEnabled(true);
         }
 
-
+        if (mapView != null &&
+                mapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 150, 120);
+        }
         latLngs = new ArrayList<>();
 
 
@@ -209,7 +230,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         RouteInterface routeInterface = retrofit.create(RouteInterface.class);
         if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
-            Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong, AppUtils.API_KEY);
+            Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|10.763229,78.817823|10.761669,78.813316", AppUtils.API_KEY);
 
             call.enqueue(new Callback<DirectionModel>() {
                 @Override
@@ -218,7 +239,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         Log.e("Fail", "Server Error.");
                         return;
                     }
-
+                    Log.e("RESPONSE",""+response.body());
                     try {
                         showRoute(response.body());
                     } catch (Exception e) {
@@ -259,7 +280,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 LatLng sourceLatLng = new LatLng(AppUtils.sourceLat, AppUtils.sourceLong);
                 MarkerOptions sourceMarker = new MarkerOptions();
                 sourceMarker.position(sourceLatLng);
-                sourceMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.blue_pin));
+                sourceMarker.icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                 sourceMarker.title("Source Position");
 
                 System.out.println("location is "+AppUtils.sourceLat+" "+ AppUtils.sourceLong);
@@ -267,7 +289,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 LatLng destLatLng = new LatLng(AppUtils.destinationLat, AppUtils.destinationLong);
                 MarkerOptions destinationMarker = new MarkerOptions();
                 destinationMarker.position(destLatLng);
-                destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.red_pin));
+                destinationMarker.icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_RED));
                 destinationMarker.title("Destination Position");
 
                 System.out.println("location is "+AppUtils.destinationLat+" "+ AppUtils.destinationLong);
@@ -286,7 +309,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
                 }
                 if(!(AppUtils.sourceLat ==-36&& AppUtils.sourceLong ==81f)||!(AppUtils.destinationLat ==-36&& AppUtils.destinationLong ==81f)) {
-                    LatLng midPoint = new LatLng((AppUtils.destinationLat +AppUtils.sourceLat)/2f, (AppUtils.sourceLong +AppUtils.destinationLong)/2f);
                     mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                 } else{
                     mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
