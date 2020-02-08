@@ -7,16 +7,16 @@ public class AutoClass {
 
     @SerializedName("autoId")
     @Expose
-    private Integer autoId;
+    public Integer autoId;
     @SerializedName("autoLatitude")
     @Expose
-    private Double autoLatitude;
+    public Double autoLatitude;
     @SerializedName("autoLongitude")
     @Expose
-    private Double autoLongitude;
+    public Double autoLongitude;
     @SerializedName("lastUpdatedAt")
     @Expose
-    private String lastUpdatedAt;
+    public String lastUpdatedAt;
 
     public Integer getAutoId() {
         return autoId;

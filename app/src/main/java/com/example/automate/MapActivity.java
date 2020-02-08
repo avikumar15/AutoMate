@@ -273,7 +273,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void addAutoToMap(List<AutoClass> auto) {
-        List<AutoClass> autos = auto;
+        final List<AutoClass> autos = auto;
+        final List<Marker> markers = new ArrayList<>();
 
         for(int i=0; i<autos.size(); i++) {
             LatLng destLatLng = new LatLng(autos.get(i).getAutoLatitude(),autos.get(i).getAutoLongitude());
@@ -281,8 +282,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             destinationMarker.position(destLatLng);
             destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw_pin));
 
-            mCurrLocationMarker = mGoogleMap.addMarker(destinationMarker);
+            markers.add(mGoogleMap.addMarker(destinationMarker));
+
+            autos.get(i).autoLatitude+=0.00001f;
+            autos.get(i).autoLongitude+=0.00001f;
         }
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //mGoogleMap;
+                for(int i=0;i<autos.size();i++)
+                    markers.get(i).remove();
+                addAutoToMap(autos);
+            }
+        }, 1000);
     }
 
     LocationManager myLocManager;
