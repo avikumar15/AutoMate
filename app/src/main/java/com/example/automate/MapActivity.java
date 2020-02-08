@@ -120,7 +120,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
 
                 //move map camera
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
+                LatLng center = new LatLng(10.762034, 78.815491);
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center,16));
             }
         }
     };
