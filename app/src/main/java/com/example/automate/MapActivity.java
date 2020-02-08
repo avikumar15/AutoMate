@@ -71,12 +71,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     DirectionModel model;
     List<LatLng> latLngs;
     View mapView;
+    Marker viaMarker;
+    String mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        mode = getIntent().getStringExtra("mode");
         destinationText = findViewById(R.id.et_destination);
         sourceText = findViewById(R.id.et_source);
         model = new DirectionModel();
@@ -144,15 +147,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
     void showRoute(DirectionModel model) {
+
         try {for (int j = 0; j < model.getRoutes().get(0).getLegs().size(); j++){
-            for (int i = 0; i < model.getRoutes().get(0).getLegs().get(j).getSteps().size(); i++) {
+            int i=0;
+            for (; i < model.getRoutes().get(0).getLegs().get(j).getSteps().size(); i++) {
                 latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLat(), model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLng()));
                 latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLat(), model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLng()));
-                LatLng sourceLatLng = new LatLng(10,78);
-                MarkerOptions sourceMarker = new MarkerOptions();
-                sourceMarker.position(sourceLatLng);
-                sourceMarker.icon(BitmapDescriptorFactory
+
+
+                System.out.println("LOCATIONS");
+                System.out.println(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLat()+","+model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getStartLocation().getLng());
+                System.out.println(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLat()+","+model.getRoutes().get(0).getLegs().get(j).getSteps().get(i).getEndLocation().getLng());
+            }
+            if(j!=model.getRoutes().get(0).getLegs().size()-1) {
+                MarkerOptions viaOption = new MarkerOptions();
+                viaOption.position(new LatLng(model.getRoutes().get(0).getLegs().get(j).getSteps().get(i - 1).getEndLocation().getLat(), model.getRoutes().get(0).getLegs().get(j).getSteps().get(i - 1).getEndLocation().getLng()));
+                viaOption.icon(BitmapDescriptorFactory
                         .defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+                viaMarker = mGoogleMap.addMarker(viaOption);
             }
         }
         }catch (NullPointerException e) {
@@ -251,12 +263,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         return;
                     }
                     Log.e("RESPONSE",""+response.body());
-                    try {
-                        showRoute(response.body());
-                    } catch (Exception e) {
+                    /*try */{
+                        model = response.body();
+                        showRoute(model);
+                    }/* catch (Exception e) {
                         Log.e("Fetching Exception", e.getMessage().toString());
                         Toast.makeText(MapActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                    }
+                    }*/
                 }
 
                 @Override
@@ -288,7 +301,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             autos.get(i).autoLongitude+=0.00001f;
         }
 
-        final Handler handler = new Handler();
+        /*final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -297,7 +310,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     markers.get(i).remove();
                 addAutoToMap(autos);
             }
-        }, 1000);
+        }, 1000);*/
     }
 
     LocationManager myLocManager;
