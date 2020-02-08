@@ -127,7 +127,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 //move map camera
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                if(!(lat==-36&&lng==81)) {
+                    LatLng midPoint = new LatLng((lat+location.getLatitude())/2, (lng+location.getLongitude())/2);
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
+                }else{
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                }
             }
         }
     };
