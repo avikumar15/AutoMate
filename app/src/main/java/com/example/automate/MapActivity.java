@@ -10,6 +10,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -48,13 +49,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     Location mLastLocation;
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
+    Float lat = -36f, lng = 81f;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-
+        intent = getIntent();
+        lat = intent.getFloatExtra("lat",-36);
+        lng = intent.getFloatExtra("lng",81);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -90,12 +95,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 //Request Location Permission
                 checkLocationPermission();
             }
-        }
-        else {
+        } else {
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
             mGoogleMap.setMyLocationEnabled(true);
         }
     }
+
     LocationManager myLocManager;
 
     LocationCallback mLocationCallback = new LocationCallback() {
@@ -113,20 +118,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 }
 
                 //Place current location marker
-                LatLng latLng = new LatLng(10.7589, 78.8132);
+                LatLng latLng = new LatLng(lat, lng);
                 MarkerOptions markerOptions = new MarkerOptions();
                 markerOptions.position(latLng);
                 markerOptions.title("Current Position");
+                if(!(lat==-36&&lng==81))
                 mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
 
                 //move map camera
-                LatLng center = new LatLng(10.762034, 78.815491);
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center,16));
+                LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
             }
         }
     };
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -147,7 +154,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                                 //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(MapActivity.this,
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION );
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
                             }
                         })
                         .create()
@@ -157,7 +164,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION );
+                        MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
     }
