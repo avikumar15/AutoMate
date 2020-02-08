@@ -44,6 +44,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.Locati
                  Intent intent = new Intent(context,MapActivity.class);
                 intent.putExtra("lat",latitude.get(position));
                 intent.putExtra("lng",longitude.get(position));
+                intent.putExtra("loc",location.get(position));
                 context.startActivity(intent);
             }
         });

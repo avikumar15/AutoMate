@@ -1,24 +1,22 @@
 package com.example.automate;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.location.LocationManagerCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,16 +26,11 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
@@ -50,17 +43,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
     Float lat = -36f, lng = 81f;
+    String location;
     Intent intent;
+    TextView locationText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        intent = getIntent();
-        lat = intent.getFloatExtra("lat",-36);
-        lng = intent.getFloatExtra("lng",81);
+        locationText = findViewById(R.id.et_location);
+        locationText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MapActivity.this,LocationSelectionActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        if(getIntent()!=null) {
+            intent = getIntent();
+            lat = intent.getFloatExtra("lat", -36);
+            lng = intent.getFloatExtra("lng", 81);
+            location = intent.getStringExtra("loc");
+
+            locationText.setText(location);
+            locationText.setTextColor(Color.parseColor("#000000"));
+        }
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if(lat==-36 && lng==81)
+        locationText.setText("Location");
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
@@ -111,7 +125,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 //The last location in the list is the newest
                 Location location = locationList.get(locationList.size() - 1);
 
-                Log.e("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
                 mLastLocation = location;
                 if (mCurrLocationMarker != null) {
                     mCurrLocationMarker.remove();
@@ -127,6 +140,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 //move map camera
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
                 if(!(lat==-36&&lng==81)) {
                     LatLng midPoint = new LatLng((lat+location.getLatitude())/2, (lng+location.getLongitude())/2);
                     mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
