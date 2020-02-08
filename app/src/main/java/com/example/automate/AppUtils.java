@@ -8,4 +8,5 @@ public class AppUtils {
     public static float destinationLat=-36f;
     public static float sourceLong=81f;
     public static float destinationLong=81f;
+    public static String ROUTE_BASE_URL="https://maps.googleapis.com/maps/api/directions/";
 }

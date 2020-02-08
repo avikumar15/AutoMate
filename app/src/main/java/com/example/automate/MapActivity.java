@@ -190,6 +190,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 LatLng destLatLng = new LatLng(AppUtils.destinationLat, AppUtils.destinationLong);
                 MarkerOptions destinationMarker = new MarkerOptions();
                 destinationMarker.position(destLatLng);
+                destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.red_pin));
                 destinationMarker.title("Destination Position");
 
                 System.out.println("location is "+AppUtils.destinationLat+" "+ AppUtils.destinationLong);
@@ -205,9 +206,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                 if(!(sourceLat ==-36&& sourceLng ==81f)) {
                     LatLng midPoint = new LatLng((AppUtils.destinationLat +AppUtils.sourceLat)/2f, (AppUtils.sourceLong +AppUtils.destinationLong)/2f);
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
+                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(midPoint, 15));
                 }else{
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
                 }
             }
         }
