@@ -10,16 +10,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.automate.models.RouteInterface;
+import com.example.automate.routemodels.DirectionModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -33,10 +37,21 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener,
+        GoogleMap.OnPolygonClickListener{
 
     GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
@@ -51,6 +66,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     TextView destinationText;
     TextView sourceText;
     String type = "";
+    DirectionModel model;
+    List<LatLng> latLngs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +76,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         destinationText = findViewById(R.id.et_destination);
         sourceText = findViewById(R.id.et_source);
+        model = new DirectionModel();
 
         destinationText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,6 +156,23 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         }
     }
+    void showRoute(DirectionModel model) {
+        try {
+            for (int i = 0; i < model.getRoutes().get(0).getLegs().get(0).getSteps().size(); i++) {
+                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getStartLocation().getLat(), model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getStartLocation().getLng()));
+                latLngs.add(new LatLng(model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getEndLocation().getLat(), model.getRoutes().get(0).getLegs().get(0).getSteps().get(i).getEndLocation().getLng()));
+            }
+        }catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        Polyline polyline1 = mGoogleMap.addPolyline(new PolylineOptions()
+                .clickable(true)
+/*                .add(new LatLng(10.7618779,78.8174691))
+                .add(new LatLng(10.7618433,78.8174696))
+                .add(new LatLng(10.7618433,78.8174696))
+                .add(new LatLng(10.761855,78.8184781)));*/
+                .addAll(latLngs));
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -162,6 +197,47 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
             mGoogleMap.setMyLocationEnabled(true);
         }
+
+
+        latLngs = new ArrayList<>();
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(AppUtils.ROUTE_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        RouteInterface routeInterface = retrofit.create(RouteInterface.class);
+        if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
+            Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong, AppUtils.API_KEY);
+
+            call.enqueue(new Callback<DirectionModel>() {
+                @Override
+                public void onResponse(Call<DirectionModel> call, Response<DirectionModel> response) {
+                    if (!response.isSuccessful()) {
+                        Log.e("Fail", "Server Error.");
+                        return;
+                    }
+
+                    try {
+                        showRoute(response.body());
+                    } catch (Exception e) {
+                        Log.e("Fetching Exception", e.getMessage().toString());
+                        Toast.makeText(MapActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<DirectionModel> call, Throwable t) {
+                    System.out.println("Failed to fetch");
+                    Log.e("Fail", t.toString());
+                }
+            });
+        }
+
+        googleMap.setOnPolylineClickListener(this);
+        googleMap.setOnPolygonClickListener(this);
+
     }
 
     LocationManager myLocManager;
@@ -287,5 +363,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    @Override
+    public void onPolygonClick(Polygon polygon) {
+
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+
     }
 }

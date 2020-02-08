@@ -9,4 +9,5 @@ public class AppUtils {
     public static float sourceLong=81f;
     public static float destinationLong=81f;
     public static String ROUTE_BASE_URL="https://maps.googleapis.com/maps/api/directions/";
+    public static String API_KEY="AIzaSyCToMpy2_HkkgIPeadh3mhZgFRF8dbR2T0";
 }

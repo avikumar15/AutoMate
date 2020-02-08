@@ -22,7 +22,7 @@
     android:layout_marginTop="60dp"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="@id/et_source"
-    android:background="#aaffffff"
+    android:background="@drawable/border_textview"
     android:text="Destination"
     android:paddingStart="10dp"
     android:paddingEnd="10dp"
@@ -30,6 +30,7 @@
     android:paddingTop="4dp"
     android:paddingBottom="4dp"
     android:textSize="20sp"
+    android:textColorHint="#000"
     >
 </TextView>
 
@@ -43,13 +44,14 @@
         android:layout_marginTop="60dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="#aaffffff"
+        android:background="@drawable/border_textview"
         android:text="Source"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:textSize="20sp"
+        android:textColorHint="#000"
         >
     </TextView>
 
@@ -58,8 +60,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Button"
-        tools:layout_editor_absoluteX="293dp"
-        tools:layout_editor_absoluteY="652dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="24dp"
         tools:text="QR" />
 
 
