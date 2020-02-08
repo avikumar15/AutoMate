@@ -23,6 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.automate.models.AutoClass;
 import com.example.automate.models.RouteInterface;
 import com.example.automate.routemodels.DirectionModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -207,7 +208,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
+        Retrofit retrofitAuto = new Retrofit.Builder()
+                .baseUrl(AppUtils.AUTO_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        AutoInterface autoInterface = retrofitAuto.create(AutoInterface.class);
+
         RouteInterface routeInterface = retrofit.create(RouteInterface.class);
+
+        Call<List<AutoClass>> callAuto = autoInterface.getAutoList();
+        callAuto.enqueue(new Callback<List<AutoClass>>() {
+            @Override
+            public void onResponse(Call<List<AutoClass>> call, Response<List<AutoClass>> response) {
+                if (!response.isSuccessful()) {
+                    Log.e("Fail", "Server Error.");
+                    return;
+                }
+
+                try {
+                    addAutoToMap(response.body());
+                } catch (Exception e) {
+                    Log.e("Fetching Exception", e.getMessage().toString());
+                    Toast.makeText(MapActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AutoClass>> call, Throwable t) {
+
+            }
+        });
+
         if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
             Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|10.763229,78.817823|10.761669,78.813316", AppUtils.API_KEY);
 
@@ -238,6 +270,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         googleMap.setOnPolylineClickListener(this);
         googleMap.setOnPolygonClickListener(this);
 
+    }
+
+    private void addAutoToMap(List<AutoClass> auto) {
+        List<AutoClass> autos = auto;
+
+        for(int i=0; i<autos.size(); i++) {
+            LatLng destLatLng = new LatLng(autos.get(i).getAutoLatitude(),autos.get(i).getAutoLongitude());
+            MarkerOptions destinationMarker = new MarkerOptions();
+            destinationMarker.position(destLatLng);
+            destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw_pin));
+
+            mCurrLocationMarker = mGoogleMap.addMarker(destinationMarker);
+        }
     }
 
     LocationManager myLocManager;
