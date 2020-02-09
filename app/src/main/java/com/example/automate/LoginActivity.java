@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         AppUtils.drivers.add(new DriverClass(2,"222",5,"","",lh2));
         AppUtils.drivers.add(new DriverClass(3,"222",5,"","",lh3));
 
-    //    AppUtils.passengers.add(new PassengerClass())
+        //    AppUtils.passengers.add(new PassengerClass())
     }
 
     private void doLogin() {
@@ -67,9 +67,6 @@ public class LoginActivity extends AppCompatActivity {
             if(id.getText().toString().equals("1") ||id.getText().toString().equals("2") || id.getText().toString().equals("3"))
             {
                 intent = new Intent(this,DriverMapActivity.class);
-
-                intent.putExtra("mode",id.getText().toString().charAt(6));
-                intent.putExtra("mode",id.getText().toString());
                 intent.putExtra("mode",id.getText().toString());
             }
             else {

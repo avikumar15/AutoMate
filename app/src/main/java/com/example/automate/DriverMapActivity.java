@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -66,7 +67,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     int id;
     RecyclerView passList;
     PassangerAdapter passangerAdapter;
-    List<String> passId = new Vector<String>();
+    List<String> passId = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +109,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 if (!response.isSuccessful()) {
                     Log.e("Fail", "Server Error.");
                     return;
-                }try {
+                }
+                {
                     List<RiderClass> riderClasses = response.body();
                     int f = 0;
                     for (RiderClass riderClass : riderClasses) {
@@ -116,17 +118,12 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                             f=1;
 
                             passId= Arrays.asList(riderClass.getPassengerId().split(", "));
-
-
-                            Log.e("Success", "\n" + passId);
-
-                            Toast.makeText(getApplicationContext(), "\n" + riderClass.getPassengerId(), Toast.LENGTH_SHORT).show();
+                        //    Log.e("Success", "\n" + passId);
+                        //    Toast.makeText(getApplicationContext(), "\n" + riderClass.getPassengerId(), Toast.LENGTH_SHORT).show();
                         }
                     }
+                    setDataToRecyclerView(passId);
 
-                } catch (Exception e) {
-                    Log.e("Fetching Exception", e.getMessage().toString());
-                    Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -135,13 +132,16 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
             }
         });
-
-        passangerAdapter = new PassangerAdapter(getApplicationContext(),passId);
-        passList.setAdapter(passangerAdapter);
+        System.out.println("latest link - "+riderInterface.getRiderClass().request().url());
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapDriver);
         mapView = mapFrag.getView();
         mapFrag.getMapAsync(this);
+    }
+
+    private void setDataToRecyclerView(List<String> body) {
+        passangerAdapter = new PassangerAdapter(getApplicationContext(),body);
+        passList.setAdapter(passangerAdapter);
     }
 
 

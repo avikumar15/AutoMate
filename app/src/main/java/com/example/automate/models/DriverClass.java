@@ -43,6 +43,11 @@ public class DriverClass
      * @param history
      * @param autoNo
      */
+
+    public DriverClass() {
+
+    }
+
     public DriverClass(Integer driverId, String drivername, Integer rating, String autoNo, String mobileNo, List<History> history) {
         super();
         this.driverId = driverId;
