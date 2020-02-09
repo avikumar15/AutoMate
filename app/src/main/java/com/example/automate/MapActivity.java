@@ -80,8 +80,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     Call<List<AutoClass>> callAuto;
     List<Marker> markers;
 
- //   AutoLocationViewModel autoLocationViewModel;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,27 +89,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         destinationText = findViewById(R.id.et_destination);
         sourceText = findViewById(R.id.et_source);
         model = new DirectionModel();
-
-    /*    autoLocationViewModel = new ViewModelProvider(this).get(AutoLocationViewModel.class);
-        try {
-            autoLocationViewModel.getAutoClass().observe(this, new Observer<List<AutoClass>>() {
-                @Override
-                public void onChanged(List<AutoClass> autoClasses) {
-                    autos = autoClasses;
-                     addAutoToMap(autos);
-                }
-            });
-        }catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-*/
-       /* autoLocationViewModel = ViewModelProviders.of(this).get(NewsViewModel.class);
-        newsViewModel.init();
-        newsViewModel.getNewsRepository().observe(this, newsResponse -> {
-            List<NewsArticle> newsArticles = newsResponse.getArticles();
-            articleArrayList.addAll(newsArticles);
-            newsAdapter.notifyDataSetChanged();
-        });*/
 
         destinationText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,6 +266,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 }
             });
         }
+
+        System.out.println(routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|10.763229,78.817823|10.761669,78.813316", AppUtils.API_KEY).request().url());
 
         googleMap.setOnPolylineClickListener(this);
         googleMap.setOnPolygonClickListener(this);

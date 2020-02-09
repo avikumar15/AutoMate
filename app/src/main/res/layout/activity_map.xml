@@ -26,16 +26,24 @@
     android:layout_weight="1"
     tools:context=".MapActivity" >
 </fragment>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="bottom"
+        >
+
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonBook"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="Button"
+        android:text="Book Now"
         android:background="#050505"
         android:textColor="#ffca28"
         android:layout_gravity="bottom"
-        tools:text="QR"
         />
+    </LinearLayout>
 </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
