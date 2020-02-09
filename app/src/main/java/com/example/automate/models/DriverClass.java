@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class DriverClass implements Serializable
+public class DriverClass
 {
 
     @SerializedName("driverId")
@@ -33,8 +33,6 @@ public class DriverClass implements Serializable
      * No args constructor for use in serialization
      *
      */
-    public DriverClass() {
-    }
 
     /**
      *

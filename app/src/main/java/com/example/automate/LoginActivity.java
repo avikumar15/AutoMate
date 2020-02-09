@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.automate.models.DriverClass;
+import com.example.automate.models.DriverHistoryClass;
 import com.example.automate.models.PassengerClass;
 
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ public class LoginActivity extends AppCompatActivity {
             if(id.getText().toString().equals("1") ||id.getText().toString().equals("2") || id.getText().toString().equals("3"))
             {
                 intent = new Intent(this,DriverMapActivity.class);
+
+                intent.putExtra("mode",id.getText().toString().charAt(6));
                 intent.putExtra("mode",id.getText().toString());
                 intent.putExtra("mode",id.getText().toString());
             }

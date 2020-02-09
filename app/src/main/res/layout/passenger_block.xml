@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:background="#eeeeee"
+    android:layout_margin="8dp"
+    android:id="@+id/passengerBlock"
+    android:orientation="horizontal">
+<TextView
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:text="Name"
+    android:id="@+id/passengerName"
+    android:gravity="center"
+    />
+    <Button
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:background="#D50000"
+        android:id="@+id/passengerFinishButton"
+        android:text="Finish"
+        />
+</LinearLayout>
