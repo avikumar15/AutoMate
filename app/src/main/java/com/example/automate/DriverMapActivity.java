@@ -55,7 +55,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Location mLastLocation;
     LocationRequest mLocationRequest;
     AutoInterface autoInterface;
-    char driverUserId;
+    String driverUserId;
     int id;
 
     @Override
@@ -64,8 +64,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         setContentView(R.layout.activity_driver_map);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
-        driverUserId = getIntent().getCharExtra("mode",'1');
-        id = driverUserId-'0';
+        driverUserId = getIntent().getStringExtra("mode");
+        id=Integer.parseInt(driverUserId);
 
         System.out.println("id is "+id);
 

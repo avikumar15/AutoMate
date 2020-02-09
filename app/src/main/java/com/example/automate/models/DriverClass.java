@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class DriverClas implements Serializable
+public class DriverClass implements Serializable
 {
 
     @SerializedName("driverId")
@@ -33,7 +33,7 @@ public class DriverClas implements Serializable
      * No args constructor for use in serialization
      *
      */
-    public DriverClas() {
+    public DriverClass() {
     }
 
     /**
@@ -45,7 +45,7 @@ public class DriverClas implements Serializable
      * @param history
      * @param autoNo
      */
-    public DriverClas(Integer driverId, String drivername, Integer rating, String autoNo, String mobileNo, List<History> history) {
+    public DriverClass(Integer driverId, String drivername, Integer rating, String autoNo, String mobileNo, List<History> history) {
         super();
         this.driverId = driverId;
         this.drivername = drivername;

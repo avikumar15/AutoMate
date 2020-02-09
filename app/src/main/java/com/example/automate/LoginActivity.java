@@ -11,7 +11,9 @@ import android.widget.Toast;
 
 import com.example.automate.models.DriverClass;
 import com.example.automate.models.PassengerClass;
-import com.example.automate.models.RideHistoryDriver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -41,9 +43,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private void insertDummyDriver() {
 
-        AppUtils.drivers.add(new DriverClass("driver1","111",4,new RideHistoryDriver(4f,2,"Ojas","Opal","12/02/2019")));
-        AppUtils.drivers.add(new DriverClass("driver2","222",5,new RideHistoryDriver(5f,4,"Agate","Orion","12/11/2019")));
-        AppUtils.drivers.add(new DriverClass("driver3","222",5,new RideHistoryDriver(5f,4,"Agate","Orion","12/02/2019")));
+        DriverClass d1=new DriverClass(),d2= new DriverClass(),d3= new DriverClass();
+        List<DriverClass.History> lh1=new ArrayList<>(),lh2=new ArrayList<>(),lh3=new ArrayList<>();
+        // todo
+        /*d1.setHistory(new DriverClass.History());
+        lh1.add(d1.History(4f,2,"Ojas","Opal","12/02/2019"))*/
+
+        AppUtils.drivers.add(new DriverClass(1,"111",4,"","",lh1));
+        AppUtils.drivers.add(new DriverClass(2,"222",5,"","",lh2));
+        AppUtils.drivers.add(new DriverClass(3,"222",5,"","",lh3));
 
     //    AppUtils.passengers.add(new PassengerClass())
     }
@@ -54,11 +62,12 @@ public class LoginActivity extends AppCompatActivity {
         }
         else {
             Intent intent;
-            System.out.println("id is "+id.getText().toString());
-            if(id.getText().toString().equals("driver1") ||id.getText().toString().equals("driver2") || id.getText().toString().equals("driver3"))
+            System.out.println("id is "+id);
+            if(id.getText().toString().equals("1") ||id.getText().toString().equals("2") || id.getText().toString().equals("3"))
             {
                 intent = new Intent(this,DriverMapActivity.class);
-                intent.putExtra("mode",id.getText().toString().charAt(6));
+                intent.putExtra("mode",id.getText().toString());
+                intent.putExtra("mode",id.getText().toString());
             }
             else {
                 intent = new Intent(this,MapActivity.class);

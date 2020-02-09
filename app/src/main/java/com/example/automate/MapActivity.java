@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,17 +47,23 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener,
-        GoogleMap.OnPolygonClickListener{
+        GoogleMap.OnPolygonClickListener, Callback<AutoClass>{
 
     GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
@@ -79,6 +86,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     List<AutoClass> autos;
     Call<List<AutoClass>> callAuto;
     List<Marker> markers;
+    Button requestRideButton;
+    BookingInterface bookingInterface;
+    int requestId;
+    int userId;
+    float sourceLatitude;
+    float sourceLongitude;
+    float destinationLatitude;
+    float destinationLongitude;
+    String requestTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +120,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 Intent intent = new Intent(MapActivity.this,LocationSelectionActivity.class);
                 intent.putExtra("type","Source");
                 startActivity(intent);
+            }
+        });
+        requestRideButton = findViewById(R.id.buttonBook);
+        requestRideButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestRide();
             }
         });
 
@@ -134,13 +157,67 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 sourceText.setText(AppUtils.source);
                 sourceText.setTextColor(Color.parseColor("#000000"));
             }
+
         }
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(AppUtils.AUTO_BASE_URL)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        bookingInterface = retrofit.create(BookingInterface.class);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapView = mapFrag.getView();
         mapFrag.getMapAsync(this);
+    }
+
+    private void requestRide() {
+        // todo
+        if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
+            try {
+                dummy();
+
+                JSONObject paramObject = new JSONObject();
+
+                paramObject.put("userId",userId);
+                paramObject.put("sourceLatitude", sourceLatitude);
+                paramObject.put("sourceLongitude", sourceLongitude);
+                paramObject.put("destinationLatitude",destinationLatitude);
+                paramObject.put("destinationLongitude",destinationLongitude);
+                paramObject.put("requestTime",requestTime);
+
+                Call<AutoClass> auto = bookingInterface.bookRide(paramObject.toString());
+                auto.enqueue(MapActivity.this);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            Call<Integer> callWhichAuto = bookingInterface.getWhichAuto();
+            callWhichAuto.enqueue(new Callback<Integer>() {
+                @Override
+                public void onResponse(Call<Integer> call, Response<Integer> response) {
+                    System.out.println("The response is "+response.body());
+                }
+
+                @Override
+                public void onFailure(Call<Integer> call, Throwable t) {
+                    System.out.println("The response is failiure "+t);
+                }
+            });
+        }
+    }
+
+    private void dummy() {
+        userId = 1;
+        sourceLatitude = AppUtils.sourceLat;
+        sourceLongitude = AppUtils.sourceLong;
+        destinationLatitude = AppUtils.destinationLat;
+        destinationLongitude = AppUtils.destinationLong;
+        requestTime="";
     }
 
     @Override
@@ -240,7 +317,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         autoCallLocation();
 
         if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
-            Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|10.763229,78.817823|10.761669,78.813316", AppUtils.API_KEY);
+            Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|"+AppUtils.destinationLat + "," + AppUtils.destinationLong, AppUtils.API_KEY);
 
             call.enqueue(new Callback<DirectionModel>() {
                 @Override
@@ -318,7 +395,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         for(int i=0; i<autos.size(); i++) {
             LatLng destLatLng = new LatLng(autos.get(i).getAutoLatitude(),autos.get(i).getAutoLongitude());
-            System.out.println("auto ka lat and lng is - "+autos.get(i).getAutoLatitude()+" "+autos.get(i).getAutoLongitude());
+            System.out.println("Auto Number - "+(i+1)+"\nE-rickshaw's Latitude - "+autos.get(i).getAutoLatitude()+"\nE-rickshaw's Longitude - "+autos.get(i).getAutoLongitude());
             MarkerOptions destinationMarker = new MarkerOptions();
             destinationMarker.position(destLatLng);
             destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw_pin));
@@ -469,6 +546,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onPolylineClick(Polyline polyline) {
+
+    }
+
+    @Override
+    public void onResponse(Call<AutoClass> call, Response<AutoClass> response) {
+
+    }
+
+    @Override
+    public void onFailure(Call<AutoClass> call, Throwable t) {
 
     }
 }
