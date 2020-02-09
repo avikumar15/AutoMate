@@ -15,6 +15,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
+import com.example.automate.models.AutoClass;
+import com.example.automate.models.DriverClass;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -29,11 +31,21 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import static com.example.automate.MapActivity.MY_PERMISSIONS_REQUEST_LOCATION;
 
-public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback, Callback<AutoClass> {
 
     private GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
@@ -42,6 +54,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     View mapView;
     Location mLastLocation;
     LocationRequest mLocationRequest;
+    AutoInterface autoInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +63,14 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(AppUtils.AUTO_BASE_URL)
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        autoInterface = retrofit.create(AutoInterface.class);
 
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapDriver);
@@ -73,8 +94,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mGoogleMap = googleMap;
 
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(120000); // two minute interval
-        mLocationRequest.setFastestInterval(120000);
+        mLocationRequest.setInterval(5000); // two minute interval
+        mLocationRequest.setFastestInterval(5000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -150,8 +171,30 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
 
+                try {
+                    JSONObject paramObject = new JSONObject();
+
+                    paramObject.put("autoId", 1);
+                    paramObject.put("autoLatitude", location.getLatitude());
+                    paramObject.put("autoLongitude", location.getLongitude());
+                    paramObject.put("lastUpdatedAt","");
+
+                    Call<AutoClass> auto = autoInterface.setLocation(1,paramObject.toString());
+                    auto.enqueue(DriverMapActivity.this);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     };
 
+    @Override
+    public void onResponse(Call<AutoClass> call, Response<AutoClass> response) {
+
+    }
+
+    @Override
+    public void onFailure(Call<AutoClass> call, Throwable t) {
+
+    }
 }
