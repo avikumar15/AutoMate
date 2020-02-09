@@ -3,6 +3,8 @@ package com.example.automate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -14,9 +16,12 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.automate.models.AutoClass;
 import com.example.automate.models.DriverClass;
+import com.example.automate.models.DriverHistoryClass;
+import com.example.automate.models.RiderClass;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -34,7 +39,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -57,11 +64,17 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     AutoInterface autoInterface;
     String driverUserId;
     int id;
+    RecyclerView passList;
+    PassangerAdapter passangerAdapter;
+    List<String> passId = new Vector<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_map);
+        passList = findViewById(R.id.passengerList);
+        passList.setHasFixedSize(true);
+        passList.setLayoutManager(new LinearLayoutManager(this));
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
         driverUserId = getIntent().getStringExtra("mode");
@@ -70,6 +83,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         System.out.println("id is "+id);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Toast.makeText(getApplicationContext(),"%%",Toast.LENGTH_SHORT).show();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(AppUtils.AUTO_BASE_URL)
@@ -79,6 +93,51 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
         autoInterface = retrofit.create(AutoInterface.class);
 
+        Retrofit retrofitRide = new Retrofit.Builder()
+                .baseUrl(AppUtils.AUTO_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        RiderInterface riderInterface = retrofitRide.create(RiderInterface.class);
+
+        Call<List<RiderClass>> call = riderInterface.getRiderClass();
+
+        call.enqueue(new Callback<List<RiderClass>>() {
+            @Override
+            public void onResponse(Call<List<RiderClass>> call, Response<List<RiderClass>> response) {
+                if (!response.isSuccessful()) {
+                    Log.e("Fail", "Server Error.");
+                    return;
+                }try {
+                    List<RiderClass> riderClasses = response.body();
+                    int f = 0;
+                    for (RiderClass riderClass : riderClasses) {
+                        if (riderClass.getDriverId() == 1) {
+                            f=1;
+
+                            passId= Arrays.asList(riderClass.getPassengerId().split(", "));
+
+
+                            Log.e("Success", "\n" + passId);
+
+                            Toast.makeText(getApplicationContext(), "\n" + riderClass.getPassengerId(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                } catch (Exception e) {
+                    Log.e("Fetching Exception", e.getMessage().toString());
+                    Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<RiderClass>> call, Throwable t) {
+
+            }
+        });
+
+        passangerAdapter = new PassangerAdapter(getApplicationContext(),passId);
+        passList.setAdapter(passangerAdapter);
         mapFrag = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapDriver);
         mapView = mapFrag.getView();
