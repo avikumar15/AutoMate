@@ -55,12 +55,19 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Location mLastLocation;
     LocationRequest mLocationRequest;
     AutoInterface autoInterface;
+    char driverUserId;
+    int id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_map);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        driverUserId = getIntent().getCharExtra("mode",'1');
+        id = driverUserId-'0';
+
+        System.out.println("id is "+id);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -170,16 +177,16 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 //move map camera
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-
+//todo
                 try {
                     JSONObject paramObject = new JSONObject();
 
-                    paramObject.put("autoId", 1);
-                    paramObject.put("autoLatitude", location.getLatitude());
-                    paramObject.put("autoLongitude", location.getLongitude());
+                    paramObject.put("autoId", id);
+                    paramObject.put("autoLatitude", (float)location.getLatitude());
+                    paramObject.put("autoLongitude", (float)location.getLongitude());
                     paramObject.put("lastUpdatedAt","");
 
-                    Call<AutoClass> auto = autoInterface.setLocation(1,paramObject.toString());
+                    Call<AutoClass> auto = autoInterface.setLocation(id,paramObject.toString());
                     auto.enqueue(DriverMapActivity.this);
                 } catch (JSONException e) {
                     e.printStackTrace();

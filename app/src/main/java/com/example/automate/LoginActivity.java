@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             if(id.getText().toString().equals("driver1") ||id.getText().toString().equals("driver2") || id.getText().toString().equals("driver3"))
             {
                 intent = new Intent(this,DriverMapActivity.class);
-                intent.putExtra("mode","driver");
+                intent.putExtra("mode",id.getText().toString().charAt(6));
             }
             else {
                 intent = new Intent(this,MapActivity.class);

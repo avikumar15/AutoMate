@@ -3,6 +3,9 @@ package com.example.automate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -73,6 +76,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     View mapView;
     Marker viaMarker;
     String mode;
+    List<AutoClass> autos;
+    Call<List<AutoClass>> callAuto;
+    List<Marker> markers;
+
+ //   AutoLocationViewModel autoLocationViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +91,27 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         destinationText = findViewById(R.id.et_destination);
         sourceText = findViewById(R.id.et_source);
         model = new DirectionModel();
+
+    /*    autoLocationViewModel = new ViewModelProvider(this).get(AutoLocationViewModel.class);
+        try {
+            autoLocationViewModel.getAutoClass().observe(this, new Observer<List<AutoClass>>() {
+                @Override
+                public void onChanged(List<AutoClass> autoClasses) {
+                    autos = autoClasses;
+                     addAutoToMap(autos);
+                }
+            });
+        }catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+*/
+       /* autoLocationViewModel = ViewModelProviders.of(this).get(NewsViewModel.class);
+        newsViewModel.init();
+        newsViewModel.getNewsRepository().observe(this, newsResponse -> {
+            List<NewsArticle> newsArticles = newsResponse.getArticles();
+            articleArrayList.addAll(newsArticles);
+            newsAdapter.notifyDataSetChanged();
+        });*/
 
         destinationText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,28 +258,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         RouteInterface routeInterface = retrofit.create(RouteInterface.class);
 
-        Call<List<AutoClass>> callAuto = autoInterface.getAutoList();
-        callAuto.enqueue(new Callback<List<AutoClass>>() {
-            @Override
-            public void onResponse(Call<List<AutoClass>> call, Response<List<AutoClass>> response) {
-                if (!response.isSuccessful()) {
-                    Log.e("Fail", "Server Error.");
-                    return;
-                }
+        callAuto = autoInterface.getAutoList();
 
-                try {
-                    addAutoToMap(response.body());
-                } catch (Exception e) {
-                    Log.e("Fetching Exception", e.getMessage().toString());
-                    Toast.makeText(MapActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<AutoClass>> call, Throwable t) {
-
-            }
-        });
+        autoCallLocation();
 
         if(!(AppUtils.sourceLat ==-36f || AppUtils.sourceLong ==81f || AppUtils.destinationLong ==81f || AppUtils.destinationLat ==81f)) {
             Call<DirectionModel> call = routeInterface.getDirectionDetails(AppUtils.sourceLat + "," + AppUtils.sourceLong, AppUtils.destinationLat + "," + AppUtils.destinationLong,"optimize:true|10.763229,78.817823|10.761669,78.813316", AppUtils.API_KEY);
@@ -285,32 +295,66 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    public void autoCallLocation() {
+
+        Retrofit retrofitAuto = new Retrofit.Builder()
+                .baseUrl(AppUtils.AUTO_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        AutoInterface autoInterface = retrofitAuto.create(AutoInterface.class);
+
+        Call<List<AutoClass>> callAuto = autoInterface.getAutoList();
+
+        callAuto.enqueue(new Callback<List<AutoClass>>() {
+            @Override
+            public void onResponse(Call<List<AutoClass>> call, Response<List<AutoClass>> response) {
+                if (!response.isSuccessful()) {
+                    Log.e("Fail", "Server Error.");
+                    return;
+                }
+
+                try {
+                    //    autoLocationViewModel.autoClass.setValue(response.body());
+                    if(markers!=null) {
+                        for (int i = 0; i < markers.size(); i++)
+                            markers.get(i).remove();
+                    }
+                    addAutoToMap(response.body());
+                } catch (Exception e) {
+                    Log.e("Fetching Exception", e.getMessage().toString());
+                    Toast.makeText(MapActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AutoClass>> call, Throwable t) {
+            }
+        });
+    }
+
     private void addAutoToMap(List<AutoClass> auto) {
         final List<AutoClass> autos = auto;
-        final List<Marker> markers = new ArrayList<>();
+        markers = new ArrayList<>();
 
         for(int i=0; i<autos.size(); i++) {
             LatLng destLatLng = new LatLng(autos.get(i).getAutoLatitude(),autos.get(i).getAutoLongitude());
+            System.out.println("auto ka lat and lng is - "+autos.get(i).getAutoLatitude()+" "+autos.get(i).getAutoLongitude());
             MarkerOptions destinationMarker = new MarkerOptions();
             destinationMarker.position(destLatLng);
             destinationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.rickshaw_pin));
 
             markers.add(mGoogleMap.addMarker(destinationMarker));
-
-            autos.get(i).autoLatitude+=0.00001f;
-            autos.get(i).autoLongitude+=0.00001f;
         }
 
-        /*final Handler handler = new Handler();
+        final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                //mGoogleMap;
-                for(int i=0;i<autos.size();i++)
-                    markers.get(i).remove();
-                addAutoToMap(autos);
+                autoCallLocation();
             }
-        }, 1000);*/
+        }, 1000);
+
     }
 
     LocationManager myLocManager;
